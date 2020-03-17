@@ -1,1 +1,1 @@
-# ML -> cloud
+Hi, this readme is not for you, please see the readme on the [master branch](http://github.com/blackstoneengineering/aiot-workshop/README.md)
