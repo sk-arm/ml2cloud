@@ -42,7 +42,7 @@
 NetworkInterface *net = NetworkInterface::get_default_instance();
 
 #define BUFF_SIZE   100 // used by td rest api
-TreasureData_RESTAPI* td = new TreasureData_RESTAPI(net,"aiot_workshop_db",MBED_CONF_APP_TABLE_NAME, MBED_CONF_APP_API_KEY);
+TreasureData_RESTAPI* td = new TreasureData_RESTAPI(net,"michael_aiot_workshop_db",MBED_CONF_APP_TABLE_NAME, MBED_CONF_APP_API_KEY);
 
 /* Instantiate the expansion board */
 static XNucleoIKS01A3 *mems_expansion_board = XNucleoIKS01A3::instance(D14, D15, D4, D5, A3, D6, A4);
@@ -157,9 +157,9 @@ void sensors_update() {
 
         // Send data to Treasure Data
         int x = 0;
-        x = sprintf(td_buff,"{\"temp\":%f,\"humidity\":%f,\"pressure\":%f}", temp_value[temp_index],humidity_value,pressure_value);
-        td_buff[x]=0; //null terminate string
-        td->sendData(td_buff,strlen(td_buff));
+  //      x = sprintf(td_buff,"{\"temp\":%f,\"humidity\":%f,\"pressure\":%f}", temp_value[temp_index],humidity_value,pressure_value);
+  //      td_buff[x]=0; //null terminate string
+  //      td->sendData(td_buff,strlen(td_buff));
 
         // run inference
         Context ctx;
@@ -170,14 +170,15 @@ void sensors_update() {
         printf("finished....");
         S_TENSOR prediction = ctx.get({"dense_3_1/BiasAdd:0"});
         float result = *(prediction->read<float>(0,0));
-        printf("\r\nResult is %f\r\n",result);
+        printf("\r\n Predicted temperature is %f\r\n",result);
         if(abs(result - (float)temp_value[temp_index]) > (result/100)*5 ){
-            printf("\r\n Its getting hot in here.. thar may be fire afoot!");
+            printf("\r\n Its getting hot in here.. ");
         } else{
-            // do nothing
+            printf("\r\n It is not hot ");
         }
-
-    // }
+        x = sprintf(td_buff,"{\"temp\":%f,\"humidity\":%f,\"pressure\":%f,\"temp_predict\":%f}", temp_value[temp_index], humidity_value, pressure_value, result);
+        td_buff[x]=0; //null terminate string
+        td->sendData(td_buff,strlen(td_buff));
 }
 
 
