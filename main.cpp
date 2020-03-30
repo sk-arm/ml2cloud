@@ -23,11 +23,12 @@
 #include "application_init.h"
 #include "mcc_common_button_and_led.h"
 #include "blinky.h"
+#include "model.h"
 #ifndef MBED_CONF_MBED_CLOUD_CLIENT_DISABLE_CERTIFICATE_ENROLLMENT
 #include "certificate_enrollment_user_cb.h"
 #endif
 
-#include "models/models/data.hpp" // uTensor
+
 #include "XNucleoIKS01A3.h"     // ST Sensor Shield
 #include "treasure-data-rest.h" // Pelion Data Management
 
@@ -46,7 +47,7 @@ TreasureData_RESTAPI* td = new TreasureData_RESTAPI(net,"michael_aiot_workshop_d
 
 /* Instantiate the expansion board */
 static XNucleoIKS01A3 *mems_expansion_board = XNucleoIKS01A3::instance(D14, D15, D4, D5, A3, D6, A4);
- 
+
 /* Retrieve the composing elements of the expansion board */
 static STTS751Sensor *temp = mems_expansion_board->t_sensor;
 static HTS221Sensor *hum_temp = mems_expansion_board->ht_sensor;
@@ -146,7 +147,7 @@ void sensors_update() {
     hum_temp->get_humidity(&humidity_value);
     float pressure_value;
     press_temp->get_pressure(&pressure_value);
-    
+
     // if (endpointInfo) {
         printf("temp[%d]:%6.4f,humidity:%6.4f,pressure:%6.4f\r\n",temp_index, temp_value[temp_index], humidity_value, pressure_value);
         // Send data to Pelion Device Management
@@ -161,15 +162,7 @@ void sensors_update() {
   //      td_buff[x]=0; //null terminate string
   //      td->sendData(td_buff,strlen(td_buff));
 
-        // run inference
-        Context ctx;
-        Tensor* temp_value_tensor = new WrappedRamTensor<float>({1,10}, (float*) &temp_value);    
-        get_data_ctx(ctx, temp_value_tensor);
-        printf("...Running Eval...");
-        ctx.eval();
-        printf("finished....");
-        S_TENSOR prediction = ctx.get({"dense_3_1/BiasAdd:0"});
-        float result = *(prediction->read<float>(0,0));
+        float result = get_model_result(temp_value);
         printf("\r\n Predicted temperature is %f\r\n",result);
         if(abs(result - (float)temp_value[temp_index]) > (result/100)*5 ){
             printf("\r\n Its getting hot in here.. ");
@@ -228,11 +221,11 @@ void main_application(void)
     temperature_res = mbedClient.add_cloud_resource(3303, 0, 5501, "temperature_resource", M2MResourceInstance::FLOAT,
                               M2MBase::GET_ALLOWED, 0, true, NULL, NULL);
     temperature_res->set_value_float(0);
-    
+
     humidity_res = mbedClient.add_cloud_resource(3304, 0, 5501, "humidity_resource", M2MResourceInstance::FLOAT,
                               M2MBase::GET_ALLOWED, 0, true, NULL, NULL);
     humidity_res->set_value_float(0);
-    
+
     pressure_res = mbedClient.add_cloud_resource(3323, 0, 5501, "pressure_resource", M2MResourceInstance::FLOAT,
                               M2MBase::GET_ALLOWED, 0, true, NULL, NULL);
     pressure_res->set_value_float(0);
