@@ -1,4 +1,5 @@
 #include "model.h"
+#include "models/models/data.hpp" // uTensor
 
 // run inference
 float get_model_result(float* temp_value) {
