@@ -23,7 +23,7 @@
 #include "application_init.h"
 #include "mcc_common_button_and_led.h"
 #include "blinky.h"
-#include "model.h"
+#include "models/model.h"
 #ifndef MBED_CONF_MBED_CLOUD_CLIENT_DISABLE_CERTIFICATE_ENROLLMENT
 #include "certificate_enrollment_user_cb.h"
 #endif
